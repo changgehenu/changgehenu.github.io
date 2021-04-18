@@ -492,41 +492,46 @@
 <p>​    Windows10（真机）</p>
 <p>​    Windbg （安装在调试机也就是真机上）</p>
 <h2 id="二、配置虚拟机"><a href="#二、配置虚拟机" class="headerlink" title="二、配置虚拟机"></a>二、配置虚拟机</h2><h3 id="2-1在VM上安装Windows10虚拟机"><a href="#2-1在VM上安装Windows10虚拟机" class="headerlink" title="2.1在VM上安装Windows10虚拟机"></a>2.1在VM上安装Windows10虚拟机</h3><h3 id="2-2Windows10虚拟机去除删除打印机，扫描仪等设备"><a href="#2-2Windows10虚拟机去除删除打印机，扫描仪等设备" class="headerlink" title="2.2Windows10虚拟机去除删除打印机，扫描仪等设备"></a>2.2Windows10虚拟机去除删除打印机，扫描仪等设备</h3><p>​    由于打印机等设备会占用串行端口，会导致Windbg无法与虚拟机连接</p>
-<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418121043400.png" alt="image-20210418121043400" style="zoom:50%;" />
+<img src="G:\blog\source\_posts\image-20210418121043400.png" alt="image-20210418121043400" style="zoom: 50%;" />
 
 <h3 id="2-3添加串口"><a href="#2-3添加串口" class="headerlink" title="2.3添加串口"></a>2.3添加串口</h3><p>​    【虚拟机】——&gt;【设置】——&gt;【添加】——&gt;【串行端口】——&gt;【完成】</p>
-<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418121954071.png" alt="image-20210418121954071" style="zoom:67%;" />
+<img src="G:\blog\source\_posts\image-20210418121954071.png" alt="image-20210418121954071" style="zoom: 50%;" />
 
 <p>​    进入刚刚新建的串行端口，点击【使用命名的管道】,设置如图</p>
-<p>​    <img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418144958211.png" alt="image-20210418144958211" style="zoom: 50%;" /></p>
+<p>​    <img src="G:\blog\source\_posts\image-20210418122938102.png" alt="image-20210418122938102" style="zoom:67%;" /></p>
 <p>​    配置正确的串行管道如图</p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418123354436.png" alt="image-20210418123354436"></p>
+<img src="G:\blog\source\_posts\image-20210418123354436.png" alt="image-20210418123354436" style="zoom:67%;" />
+
 <h3 id="2-4打开虚拟机进行配置"><a href="#2-4打开虚拟机进行配置" class="headerlink" title="2.4打开虚拟机进行配置"></a>2.4打开虚拟机进行配置</h3><p>​    1）首先win+R输入cmd,点击确定进入终端，输入“bcdedit”</p>
-<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418133737136.png" alt="image-20210418133737136" style="zoom: 67%;" />
+<img src="G:\blog\source\_posts\image-20210418133737136.png" alt="image-20210418133737136" style="zoom:67%;" />
 
 <p>​        2）设置端口1，命令如下：</p>
 <p><code>bcdedit /dbgsettings serial baudrate:115200 debugport:1</code></p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418135139505.png" alt="image-20210418135139505"></p>
+<p><img src="G:\blog\source_posts\image-20210418135139505.png" alt="image-20210418135139505"></p>
 <p>​        3）复制一个开机选项，命名为“DebugEntry”，可任意命名。命令如下：</p>
 <p><code>bcdedit /copy &#123;current&#125; /d DebugEntry</code> </p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418135332081.png" alt="image-20210418135332081"></p>
+<p><img src="G:\blog\source_posts\image-20210418135332081.png" alt="image-20210418135332081"></p>
 <p>​        4）增加一个开机引导项。命令如下：</p>
 <p><code>bcdedit /displayorder &#123;current&#125; &#123;ID&#125;</code>    #ID为上面命令返回的数字</p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418135629183.png" alt="image-20210418135629183"></p>
+<p><img src="G:\blog\source_posts\image-20210418135629183.png" alt="image-20210418135629183"></p>
 <p>​        5）激活debug</p>
 <p><code>bcdedit /debug &#123;ID&#125; ON</code>   #ID同上</p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418135920355.png" alt="image-20210418135920355"></p>
+<p><img src="G:\blog\source_posts\image-20210418135920355.png" alt="image-20210418135920355"></p>
 <h2 id="三、配置WinDBG"><a href="#三、配置WinDBG" class="headerlink" title="三、配置WinDBG"></a>三、配置WinDBG</h2><p>​    1)安装WinDBG，创建桌面快捷方式，右键WinDBG，点击【属性】，在【目标】后面加空格添加以下命令：</p>
 <p><code>-b -k com:pipe,port=\\.\pipe\com_1,resets=0</code></p>
+<img src="G:\blog\source\_posts\image-20210418160817043.png" alt="image-20210418160817043" style="zoom:67%;" />
+
 <p>​    点击保存即可</p>
 <p>​    2)配置环境：参考博客：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/yilang/p/11383369.html">https://www.cnblogs.com/yilang/p/11383369.html</a></p>
 <h2 id="四、双机调试"><a href="#四、双机调试" class="headerlink" title="四、双机调试"></a>四、双机调试</h2><p>​    1）重启虚拟机，注意，在虚拟机关机时打开WinDBG，其次打开WinDBG要以管理员方式打开（右键，以管理员方式打开），速度要快，然后选择“DebugEntry[debug]”作为启动项。</p>
 <p>​    2）在连接成功后，WinDBG界面输入g,进入虚拟机系统</p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418151742717.png" alt="image-20210418151742717"></p>
-<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418151607220.png" alt="image-20210418151607220" style="zoom:50%;" />
+<img src="G:\blog\source\_posts\image-20210418151742717.png" alt="image-20210418151742717" style="zoom:67%;" />
+
+<img src="G:\blog\source\_posts\image-20210418151607220.png" alt="image-20210418151607220" style="zoom:67%;" />
 
 <p>​    3）打开WinDBG后最终显示：</p>
-<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210418155122052.png" alt="image-20210418155122052"></p>
+<img src="G:\blog\source\_posts\image-20210418155122052.png" alt="image-20210418155122052" style="zoom:67%;" />
+
 <p>​    </p>
 
                 
@@ -554,7 +559,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://changgehenu.github.io/2021/04/18/windbg%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/">https://changgehenu.github.io/2021/04/18/windbg%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/</a>
+                    <a href="https://changgehenu.github.io/2021/04/18/Windbg%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/">https://changgehenu.github.io/2021/04/18/Windbg%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -766,7 +771,7 @@
                 <i class="far fa-dot-circle"></i>&nbsp;Current
             </div>
             <div class="card">
-                <a href="/2021/04/18/windbg%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/">
+                <a href="/2021/04/18/Windbg%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/">
                     <div class="card-image">
                         
                         
