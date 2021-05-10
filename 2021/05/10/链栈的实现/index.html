@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Windows10+Windows7+WinDBG+符号表的双机调试, 长歌">
+    <meta name="keywords" content="链栈的实现, 长歌">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Windows10+Windows7+WinDBG+符号表的双机调试 | 长歌</title>
+    <title>链栈的实现 | 长歌</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -330,12 +330,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/5.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/12.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Windows10+Windows7+WinDBG+符号表的双机调试</h1>
+                    <h1 class="description center-align post-title">链栈的实现</h1>
                 </div>
             </div>
         </div>
@@ -449,9 +449,13 @@
             <div class="row tag-cate">
                 <div class="col s7">
                     
-                          <div class="article-tag">
-                            <span class="chip bg-color">No tag</span>
-                          </div>
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E8%80%83%E7%A0%94%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E9%93%BE%E6%A0%88%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+                                <span class="chip bg-color">考研数据结构链栈的实现</span>
+                            </a>
+                        
+                    </div>
                     
                 </div>
                 <div class="col s5 right-align">
@@ -463,7 +467,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2021-04-24
+                    2021-05-10
                 </div>
                 
 
@@ -487,50 +491,138 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="Windows10-Windows7-WinDBG-符号表的双机调试"><a href="#Windows10-Windows7-WinDBG-符号表的双机调试" class="headerlink" title="Windows10+Windows7+WinDBG+符号表的双机调试"></a>Windows10+Windows7+WinDBG+符号表的双机调试</h1><h2 id="一、实验环境"><a href="#一、实验环境" class="headerlink" title="一、实验环境"></a>一、实验环境</h2><p>​    VMWare Workstation 15 PRO</p>
-<p>​    Windows7（虚拟机）</p>
-<p>​    Windows10（主机，调试机）</p>
-<p>​     WinDBG（调试工具）</p>
-<h2 id="二、虚拟机设置"><a href="#二、虚拟机设置" class="headerlink" title="二、虚拟机设置"></a>二、虚拟机设置</h2><h3 id="2-1虚拟机开机前配置"><a href="#2-1虚拟机开机前配置" class="headerlink" title="2.1虚拟机开机前配置"></a>2.1虚拟机开机前配置</h3><p>​    配置串口，【虚拟机】——&gt;【设置】,删除打印机，扫描仪等设备,否在会导致WinDBG与虚拟机连接不上！</p>
-<img src="https://i.bmp.ovh/imgs/2021/04/32b5574e9a1df5a5.png" style="zoom:50%;" />
+                <h1 id="链栈的实现"><a href="#链栈的实现" class="headerlink" title="链栈的实现"></a>链栈的实现</h1><p>​    采用链式存储的栈成为链栈，链栈的优点是便于多个栈共享存储空间和提高效率，且不存在栈满上溢的情况（此处注意：后面代码将不考虑栈满的问题）。</p>
+<p>​    通常采用单链表实现，并规定所有的操作实在单链表的表头进行的。这里我们所示代码是不含头结点!</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/*
+    链栈的操作
+    2021年5月10日14:19:44
+*/</span>
 
-<p>​    添加串行端口<code>\\.\pipe\com_1</code> 【添加】——&gt;【串行端口】——&gt;【完成】，在创建完成会进入串行端口的设置，设置    如下图，注意勾选上【轮询时主动放弃】，点击【确定】<img src="https://i.bmp.ovh/imgs/2021/04/a1e639341a5146f2.png" style="zoom:67%;" /></p>
-<h3 id="2-2打开虚拟机配置"><a href="#2-2打开虚拟机配置" class="headerlink" title="2.2打开虚拟机配置"></a>2.2打开虚拟机配置</h3><p>​    1、打开Windows7虚拟机，在Win图标搜索cmd,右键，以管理员方式打开（注意：一定需要管理员）</p>
-<img src="https://i.bmp.ovh/imgs/2021/04/8ecb5b2d6814ac2f.png" style="zoom:67%;" />
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdlib.h></span></span>
 
-<p>​    2、输入<code>bcdedit</code></p>
-<img src="https://i.bmp.ovh/imgs/2021/04/bb0112d340ea4ded.png" style="zoom:67%;" />
 
-<p>​    3、设置端口1，命令如下：</p>
-<p><code>bcdedit /dbgsettings serial baudrate:115200 debugport:1</code>   //注意：该处的“1”，对应com口1。</p>
-<p><img src="https://i.bmp.ovh/imgs/2021/04/f7cefa4456b59947.png"></p>
-<p>​    4、复制一个开机选项，命名为“DebugEntry”，可任意命名。命令如下：</p>
-<p><code>bcdedit /copy &#123;current&#125; /d DebugEntry</code> </p>
-<p><img src="https://i.bmp.ovh/imgs/2021/04/d23a241b281f1f99.png"></p>
-<p>​    5、增加一个开机引导项</p>
-<p><code>bcdedit /displayorder &#123;current&#125; &#123;ID&#125;</code>  //此处ID为上面得到的{}里面的字符</p>
-<p><img src="https://i.bmp.ovh/imgs/2021/04/b9ed5f1ae5c2b9c7.png"></p>
-<p>​    6、激活debug</p>
-<p><code>bcdedit /debug &#123;ID&#125; ON</code>  //ID同上</p>
-<p><img src="https://i.bmp.ovh/imgs/2021/04/42a8b777107b036c.png"></p>
-<h2 id="三、WinDBG配置"><a href="#三、WinDBG配置" class="headerlink" title="三、WinDBG配置"></a>三、WinDBG配置</h2><p>​    1、给WinDBG创建桌面快捷方式，右键——&gt;【属性】，在【目标】后面加一个空格，填入</p>
-<p><code>-b -k com:pipe,port=\\.\pipe\com_1,resets=0</code></p>
-<p>​    再点击确定。</p>
-<img src="https://i.bmp.ovh/imgs/2021/04/87934700e5160d4f.png" style="zoom:67%;" />
 
-<h2 id="四、双机调试"><a href="#四、双机调试" class="headerlink" title="四、双机调试"></a>四、双机调试</h2><p>​    1、重启Windows7虚拟机，在虚拟机关机的同时以管理员方式打开WinDBG，虚拟机启动后选择【DebugEntry】</p>
-<img src="https://i.bmp.ovh/imgs/2021/04/9f2030dd9ac19b80.png" style="zoom: 50%;" />
+<span class="token comment">//初始化</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">Linknode</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> data<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">Linknode</span> <span class="token operator">*</span>next<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span class="token operator">*</span>LiStack<span class="token punctuation">;</span>
 
-<p>​    2、在WinDBG如图位置输入g，使Windows7虚拟机继续运行，进入系统</p>
-<img src="https://i.loli.net/2021/04/20/l3C7e68OuLcHnTS.png"  style="zoom:67%;" />
+<span class="token comment">//建立</span>
+bool <span class="token function">Found</span><span class="token punctuation">(</span>LiStack <span class="token operator">&amp;</span>L<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    L <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"已建立\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
 
-<p>​    3、选择菜单项的【File】——&gt;【Symbol File Path】,然后填下：</p>
-<p><code>srv*c:\Symbols*http://msdl.microsoft.com/download/symbols</code> </p>
-<p>​    勾选【Reload】，点击【OK】开始下载</p>
-<p><img src="https://i.loli.net/2021/04/20/c3uTbjaZI8tsKkp.png"></p>
-<p>​    4、此时，就会下载符号表,注意：下载速度缓慢甚至失败，多尝试几次，下载完成之后在C:\symbols会有下载的符号表</p>
-<h4 id="注意：若WinDBG一直busy，Ctrl-break中断就行"><a href="#注意：若WinDBG一直busy，Ctrl-break中断就行" class="headerlink" title="注意：若WinDBG一直busy，Ctrl+break中断就行"></a>注意：若WinDBG一直busy，Ctrl+break中断就行</h4><p>​    5、在WinDBG输入<code>！process 0 0</code>，可以看到虚拟机正在运行的进程</p>
-<p><img src="https://i.loli.net/2021/04/20/RaEmPf9wOlItvjq.png"></p>
+<span class="token comment">//判空</span>
+bool <span class="token function">Empty</span><span class="token punctuation">(</span>LiStack L<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>L <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"为空\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">return</span> true<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">else</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token keyword">return</span> false<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token comment">//增（进栈）</span>
+bool <span class="token function">Push</span><span class="token punctuation">(</span>LiStack <span class="token operator">&amp;</span>L<span class="token punctuation">,</span><span class="token keyword">int</span> x<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	Linknode <span class="token operator">*</span>s<span class="token punctuation">;</span>
+	s <span class="token operator">=</span> <span class="token punctuation">(</span>LiStack<span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>Linknode<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span><span class="token punctuation">(</span>s <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"无法申请\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">return</span> false<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	s<span class="token operator">-></span>data <span class="token operator">=</span> x<span class="token punctuation">;</span>
+	s<span class="token operator">-></span>next <span class="token operator">=</span> L<span class="token punctuation">;</span>
+	L <span class="token operator">=</span> s<span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"已增加\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//删（出栈）</span>
+bool <span class="token function">Pop</span><span class="token punctuation">(</span>LiStack <span class="token operator">&amp;</span>L<span class="token punctuation">,</span><span class="token keyword">int</span> <span class="token operator">&amp;</span>x<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">Empty</span><span class="token punctuation">(</span>L<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"无法删除\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">return</span> false<span class="token punctuation">;</span><span class="token comment">//栈空，无法删除</span>
+	<span class="token punctuation">&#125;</span>
+	Linknode <span class="token operator">*</span>s<span class="token punctuation">;</span>
+	x <span class="token operator">=</span> L<span class="token operator">-></span>data<span class="token punctuation">;</span>
+	s <span class="token operator">=</span> L<span class="token punctuation">;</span>
+	L <span class="token operator">=</span> L<span class="token operator">-></span>next<span class="token punctuation">;</span>
+	<span class="token function">free</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"已删除\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//查</span>
+bool <span class="token function">Examine</span><span class="token punctuation">(</span>LiStack L<span class="token punctuation">,</span><span class="token keyword">int</span> <span class="token operator">&amp;</span>x<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">Empty</span><span class="token punctuation">(</span>L<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"无法查找\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">return</span> false<span class="token punctuation">;</span><span class="token comment">//栈空，无法查找</span>
+	<span class="token punctuation">&#125;</span>
+	x <span class="token operator">=</span> L<span class="token operator">-></span>data<span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"查找栈顶元素 = %d\n"</span><span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token comment">//初始化</span>
+   LiStack L<span class="token punctuation">;</span>
+  
+   
+	<span class="token comment">//创建</span>
+   <span class="token function">Found</span><span class="token punctuation">(</span>L<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+<span class="token comment">//以下代码均为测试代码</span>
+
+	<span class="token comment">//判空</span>
+   <span class="token function">Empty</span><span class="token punctuation">(</span>L<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">//增、查</span>
+   <span class="token function">Push</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">int</span> a<span class="token punctuation">,</span>b<span class="token punctuation">;</span>
+   <span class="token function">Examine</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">Push</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">Examine</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">//删、查</span>
+   <span class="token keyword">int</span> c<span class="token punctuation">,</span>d<span class="token punctuation">;</span>
+   <span class="token function">Pop</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">Examine</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">int</span> e<span class="token punctuation">;</span>
+   <span class="token function">Pop</span><span class="token punctuation">(</span>L<span class="token punctuation">,</span>e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">Empty</span><span class="token punctuation">(</span>L<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="在VC-6-0中的实验结果为："><a href="#在VC-6-0中的实验结果为：" class="headerlink" title="在VC++6.0中的实验结果为："></a>在VC++6.0中的实验结果为：</h2><pre class="line-numbers language-none"><code class="language-none">已建立
+为空
+已增加
+查找栈顶元素 &#x3D; 5
+已增加
+查找栈顶元素 &#x3D; 7
+已删除
+查找栈顶元素 &#x3D; 5
+已删除
+为空
+Press any key to continue<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="后记："><a href="#后记：" class="headerlink" title="后记："></a>后记：</h3><p>本实验是根据王道考研数据结构链栈来自行编写的代码，实验过程中所经历的一系列bug让我所获甚多，同时，引用王道考研咸鱼老师所说：学习相当于输入，考试相当于输出，我们一定要自己动手去做，才能真正加强输出！</p>
 
                 
             </div>
@@ -557,7 +649,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://changgehenu.github.io/2021/04/24/Windows10-Windows7-WinDBG-%E7%AC%A6%E5%8F%B7%E8%A1%A8%E7%9A%84%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/">https://changgehenu.github.io/2021/04/24/Windows10-Windows7-WinDBG-%E7%AC%A6%E5%8F%B7%E8%A1%A8%E7%9A%84%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/</a>
+                    <a href="https://changgehenu.github.io/2021/05/10/%E9%93%BE%E6%A0%88%E7%9A%84%E5%AE%9E%E7%8E%B0/">https://changgehenu.github.io/2021/05/10/%E9%93%BE%E6%A0%88%E7%9A%84%E5%AE%9E%E7%8E%B0/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -594,7 +686,11 @@
                 <div class="post-meta__tag-list" style="display: inline-block;">
                     
                         <div class="article-tag">
-                            <span class="chip bg-color">No tag</span>
+                            
+                                <a href="/tags/%E8%80%83%E7%A0%94%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E9%93%BE%E6%A0%88%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+                                    <span class="chip bg-color">考研数据结构链栈的实现</span>
+                                </a>
+                            
                         </div>
                     
                 </div>
@@ -764,9 +860,10 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
                 <a href="/2021/05/10/%E9%93%BE%E6%A0%88%E7%9A%84%E5%AE%9E%E7%8E%B0/">
                     <div class="card-image">
@@ -784,9 +881,9 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-05-10
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-05-10
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -795,6 +892,7 @@
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -813,13 +911,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/01/18/Centos7%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2hexo-Github-%E5%9F%9F%E5%90%8D/">
+                <a href="/2021/04/24/Windows10-Windows7-WinDBG-%E7%AC%A6%E5%8F%B7%E8%A1%A8%E7%9A%84%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/8.jpg" class="responsive-img" alt="Centos7搭建自己的博客hexo + Github +域名">
+                        <img src="/medias/featureimages/5.jpg" class="responsive-img" alt="Windows10+Windows7+WinDBG+符号表的双机调试">
                         
-                        <span class="card-title">Centos7搭建自己的博客hexo + Github +域名</span>
+                        <span class="card-title">Windows10+Windows7+WinDBG+符号表的双机调试</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -830,7 +928,7 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-01-18
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-04-24
                             </span>
                         <span class="publish-author">
                             
